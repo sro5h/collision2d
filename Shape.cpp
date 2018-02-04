@@ -178,6 +178,8 @@ void handleResult(const c2Manifold& manifold, Manifold& m)
         {
                 m.normal.x = manifold.normal.x;
                 m.normal.y = manifold.normal.y;
+                m.contact.x = manifold.contact_points[0].x;
+                m.contact.y = manifold.contact_points[0].y;
                 m.depth = manifold.depths[0];
         }
 }

@@ -71,6 +71,7 @@ private:
 public:
         bool colliding;
         sf::Vector2f normal;
+        sf::Vector2f contact;
         float depth;
 };
 
