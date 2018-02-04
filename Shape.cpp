@@ -89,7 +89,15 @@ void Aabb::setSize(float width, float height)
         mSize.y = height;
 }
 
-Manifold::Manifold(const Shape& a, const Shape& b)
+Manifold::Manifold()
+        : colliding(false)
+        , normal(0, 0)
+        , contact(0, 0)
+        , depth(0)
+{
+}
+
+void Manifold::solve(const Shape& a, const Shape& b)
 {
         dispatch(a, b);
 }
@@ -110,12 +118,12 @@ void Manifold::dispatch(const Shape& a, const Shape& b)
                 if (b.mType == Type::Aabb)
                 {
                         const Aabb& bChild = castShape<Aabb>(b);
-                        solve(aChild, bChild);
+                        collide(aChild, bChild);
                 }
                 else if (b.mType == Type::Circle)
                 {
                         const Circle& bChild = castShape<Circle>(b);
-                        solve(aChild, bChild);
+                        collide(aChild, bChild);
                 }
         }
         else if (a.mType == Type::Circle)
@@ -125,17 +133,17 @@ void Manifold::dispatch(const Shape& a, const Shape& b)
                 if (b.mType == Type::Aabb)
                 {
                         const Aabb& bChild = castShape<Aabb>(b);
-                        solve(aChild, bChild);
+                        collide(aChild, bChild);
                 }
                 else if (b.mType == Type::Circle)
                 {
                         const Circle& bChild = castShape<Circle>(b);
-                        solve(aChild, bChild);
+                        collide(aChild, bChild);
                 }
         }
 }
 
-void Manifold::solve(const Aabb& a, const Aabb& b)
+void Manifold::collide(const Aabb& a, const Aabb& b)
 {
         c2AABB shapeA = shapeToc2(a);
         c2AABB shapeB = shapeToc2(b);
@@ -145,7 +153,7 @@ void Manifold::solve(const Aabb& a, const Aabb& b)
         handleResult(m, *this);
 }
 
-void Manifold::solve(const Circle& a, const Circle& b)
+void Manifold::collide(const Circle& a, const Circle& b)
 {
         c2Circle shapeA = shapeToc2(a);
         c2Circle shapeB = shapeToc2(b);
@@ -155,13 +163,13 @@ void Manifold::solve(const Circle& a, const Circle& b)
         handleResult(m, *this);
 }
 
-void Manifold::solve(const Aabb& a, const Circle& b)
+void Manifold::collide(const Aabb& a, const Circle& b)
 {
-        solve(b, a);
+        collide(b, a);
         normal = -normal;
 }
 
-void Manifold::solve(const Circle& a, const Aabb& b)
+void Manifold::collide(const Circle& a, const Aabb& b)
 {
         c2Circle shapeA = shapeToc2(a);
         c2AABB shapeB = shapeToc2(b);

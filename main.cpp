@@ -4,6 +4,9 @@
 #include <iostream>
 #include <memory>
 
+const float speed = 1.0f;
+const sf::Time delta = sf::microseconds(15625);
+
 int main()
 {
         sf::RenderWindow window(sf::VideoMode(400, 400), "App");
@@ -13,9 +16,15 @@ int main()
         shapeA->setPosition(20, 20);
         auto shapeB = std::make_unique<Aabb>(50, 60);
         shapeB->move(20, 20);
+        Manifold m;
+
+        sf::Clock clock;
+        sf::Time accumulator;
 
         while (window.isOpen())
         {
+                accumulator += clock.restart();
+
                 sf::Event event;
                 while (window.pollEvent(event))
                 {
@@ -23,10 +32,20 @@ int main()
                                 window.close();
                 }
 
-                Manifold m(*shapeA, *shapeB);
-                if (m.colliding)
+                while (accumulator >= delta)
                 {
-                        std::cout << "Collision occured!" << std::endl;
+                        accumulator -= delta;
+
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+                                shapeA->move(-1.0f * speed, 0);
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+                                shapeA->move( 1.0f * speed, 0);
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+                                shapeA->move(0, -1.0f * speed);
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+                                shapeA->move(0,  1.0f * speed);
+
+                        m.solve(*shapeA, *shapeB);
                 }
 
                 window.clear();

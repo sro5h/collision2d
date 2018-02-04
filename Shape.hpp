@@ -59,14 +59,16 @@ private:
 class Manifold
 {
 public:
-        Manifold(const Shape& a, const Shape& b);
+        Manifold();
+
+        void solve(const Shape& a, const Shape& b);
 
 private:
         void dispatch(const Shape& a, const Shape& b);
-        void solve(const Aabb& a, const Aabb& b);
-        void solve(const Circle& a, const Circle& b);
-        void solve(const Aabb& a, const Circle& b);
-        void solve(const Circle& a, const Aabb& b);
+        void collide(const Aabb& a, const Aabb& b);
+        void collide(const Circle& a, const Circle& b);
+        void collide(const Aabb& a, const Circle& b);
+        void collide(const Circle& a, const Aabb& b);
 
 public:
         bool colliding;
