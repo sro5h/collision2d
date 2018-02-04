@@ -27,3 +27,22 @@ void DebugDraw::draw(const Circle& circle, sf::Color color)
 
         mTarget.draw(shape);
 }
+
+void DebugDraw::draw(const Manifold& manifold, sf::Color color)
+{
+        if (manifold.colliding)
+        {
+                sf::Vector2f normal = manifold.normal * manifold.depth;
+                sf::Vertex point[] = {
+                        sf::Vertex(manifold.contact, sf::Color::Red),
+                };
+
+                sf::Vertex line[] = {
+                        sf::Vertex(manifold.contact, color),
+                        sf::Vertex(manifold.contact + normal, color),
+                };
+
+                mTarget.draw(line, 2, sf::Lines);
+                mTarget.draw(point, 1, sf::Points);
+        }
+}

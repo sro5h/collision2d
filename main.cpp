@@ -32,6 +32,7 @@ int main()
                 window.clear();
                 debug.draw(*shapeA);
                 debug.draw(*shapeB);
+                debug.draw(m, sf::Color::Green);
                 window.display();
         }
 
