@@ -13,9 +13,9 @@ int main()
         DebugDraw debug(window);
 
         auto shapeA = std::make_unique<Circle>(30);
-        shapeA->setPosition(20, 20);
+        shapeA->setPosition(100, 100);
         auto shapeB = std::make_unique<Aabb>(50, 60);
-        shapeB->move(20, 20);
+        shapeB->move(180, 180);
         Manifold m;
 
         sf::Clock clock;
@@ -46,6 +46,11 @@ int main()
                                 shapeA->move(0,  1.0f * speed);
 
                         m.solve(*shapeA, *shapeB);
+
+                        if (m.colliding)
+                        {
+                                shapeA->move(-m.normal * m.depth);
+                        }
                 }
 
                 window.clear();
