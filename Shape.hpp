@@ -24,7 +24,7 @@ protected:
         Shape(Type type);
 
 private:
-        Type mType;
+        const Type mType;
         sf::Vector2f mPosition;
 
         friend class Manifold;
