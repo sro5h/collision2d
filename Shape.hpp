@@ -28,6 +28,7 @@ private:
         sf::Vector2f mPosition;
 
         friend class Manifold;
+        friend class Raycast;
 };
 
 class Circle : public Shape
@@ -56,6 +57,27 @@ private:
         sf::Vector2f mSize;
 };
 
+class Ray
+{
+public:
+        Ray(sf::Vector2f direction, float length);
+        Ray(float x, float y, float length);
+
+        sf::Vector2f getPosition() const;
+        void setPosition(sf::Vector2f position);
+        void setPosition(float x, float y);
+        sf::Vector2f getDirection() const;
+        void setDirection(sf::Vector2f direction);
+        void setDirection(float x, float y);
+        float getLength() const;
+        void setLength(float length);
+
+private:
+        sf::Vector2f mPosition;
+        sf::Vector2f mDirection;
+        float mLength;
+};
+
 class Manifold
 {
 public:
@@ -75,6 +97,25 @@ public:
         sf::Vector2f normal;
         sf::Vector2f contact;
         float depth;
+};
+
+class Raycast
+{
+public:
+        Raycast();
+
+        void solve(const Ray& a, const Shape& b);
+
+private:
+        void dispatch(const Ray& a, const Shape& b);
+        void calculate(const Ray& a, const Aabb& b);
+        void calculate(const Ray& a, const Circle& b);
+
+public:
+        bool hit;
+        sf::Vector2f normal;
+        sf::Vector2f contact;
+        float t;
 };
 
 #endif // SHAPE_HPP

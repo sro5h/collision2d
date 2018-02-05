@@ -17,6 +17,9 @@ int main()
         auto shapeB = std::make_unique<Aabb>(50, 60);
         shapeB->move(180, 180);
         Manifold m;
+        auto ray = std::make_unique<Ray>(0, 1, 100);
+        ray->setPosition(50, 50);
+        Raycast r;
 
         sf::Clock clock;
         sf::Time accumulator;
@@ -46,6 +49,7 @@ int main()
                                 shapeA->move(0,  1.0f * speed);
 
                         m.solve(*shapeA, *shapeB);
+                        r.solve(*ray, *shapeA);
 
                         if (m.colliding)
                         {
@@ -56,7 +60,9 @@ int main()
                 window.clear();
                 debug.draw(*shapeA);
                 debug.draw(*shapeB);
+                debug.draw(*ray);
                 debug.draw(m, sf::Color::Green);
+                debug.draw(r, sf::Color::Cyan);
                 window.display();
         }
 
