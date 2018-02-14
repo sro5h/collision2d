@@ -5,10 +5,10 @@ DebugDraw::DebugDraw(sf::RenderTarget& target)
 {
 }
 
-void DebugDraw::draw(const Aabb& aabb, const sf::Vector2f pos, sf::Color color)
+void DebugDraw::draw(const Aabb& aabb, const sf::Transform transform, sf::Color color)
 {
         sf::RectangleShape shape(aabb.getSize());
-        shape.setPosition(pos);
+        shape.setPosition(transform.transformPoint(0.0f, 0.0f));
         shape.setFillColor(sf::Color::Transparent);
         shape.setOutlineColor(color);
         shape.setOutlineThickness(1.0f);
@@ -16,11 +16,11 @@ void DebugDraw::draw(const Aabb& aabb, const sf::Vector2f pos, sf::Color color)
         mTarget.draw(shape);
 }
 
-void DebugDraw::draw(const Circle& circle, const sf::Vector2f pos, sf::Color color)
+void DebugDraw::draw(const Circle& circle, const sf::Transform transform, sf::Color color)
 {
         sf::CircleShape shape(circle.getRadius());
         shape.setOrigin(circle.getRadius(), circle.getRadius());
-        shape.setPosition(pos);
+        shape.setPosition(transform.transformPoint(0.0f, 0.0f));
         shape.setFillColor(sf::Color::Transparent);
         shape.setOutlineColor(color);
         shape.setOutlineThickness(1.0f);
@@ -28,12 +28,13 @@ void DebugDraw::draw(const Circle& circle, const sf::Vector2f pos, sf::Color col
         mTarget.draw(shape);
 }
 
-void DebugDraw::draw(const Ray& ray, const sf::Vector2f pos, sf::Color color)
+void DebugDraw::draw(const Ray& ray, const sf::Transform transform, sf::Color color)
 {
+        sf::Vector2f position = transform.transformPoint(0.0f, 0.0f);
         sf::Vector2f direction = ray.getDirection() * ray.getLength();
         sf::Vertex line[] = {
-                sf::Vertex(pos, color),
-                sf::Vertex(pos + direction, color),
+                sf::Vertex(position, color),
+                sf::Vertex(position + direction, color),
         };
 
         mTarget.draw(line, 2, sf::Lines);
@@ -77,14 +78,14 @@ void DebugDraw::draw(const Raycast& raycast, sf::Color color)
         }
 }
 
-void DebugDraw::draw(const Shape& shape, const sf::Vector2f pos, sf::Color color)
+void DebugDraw::draw(const Shape& shape, const sf::Transform transform, sf::Color color)
 {
         if (shape.getType() == Type::Aabb)
         {
-                draw(castShape<Aabb>(shape), pos, color);
+                draw(castShape<Aabb>(shape), transform, color);
         }
         else if (shape.getType() == Type::Circle)
         {
-                draw(castShape<Circle>(shape), pos, color);
+                draw(castShape<Circle>(shape), transform, color);
         }
 }

@@ -13,12 +13,15 @@ int main()
         DebugDraw debug(window);
 
         Circle::Ptr shapeA = std::make_unique<Circle>(30);
-        sf::Vector2f positionA(200, 200);
+        sf::Transform positionA;
+        positionA.translate(200, 200);
         Aabb::Ptr shapeB = std::make_unique<Aabb>(50, 60);
-        sf::Vector2f positionB(300, 300);
+        sf::Transform positionB;
+        positionB.translate(300, 300);
         Manifold m;
         Ray::Ptr ray = std::make_unique<Ray>(0, 1, 100);
-        sf::Vector2f positionR(100, 100);
+        sf::Transform positionR;
+        positionR.translate(100, 100);
         Raycast r;
 
         sf::Clock clock;
@@ -40,20 +43,20 @@ int main()
                         accumulator -= delta;
 
                         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-                                positionA.x += 1.0f * speed;
+                                positionA.translate(1.0f * speed, 0.0f);
                         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-                                positionA.x -= 1.0f * speed;
+                                positionA.translate(-1.0f * speed, 0.0f);
                         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-                                positionA.y += 1.0f * speed;
+                                positionA.translate(0.0f, 1.0f * speed);
                         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-                                positionA.y -= 1.0f * speed;
+                                positionA.translate(0.0f, -1.0f * speed);
 
                         m.solve(*shapeA, positionA, *shapeB, positionB);
                         r.solve(*ray, positionR, *shapeA, positionA);
 
                         if (m.colliding)
                         {
-                                positionA -= m.normal * m.depth;
+                                positionA.translate(-m.normal * m.depth);
                         }
                 }
 
