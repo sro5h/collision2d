@@ -12,12 +12,12 @@ int main()
         sf::RenderWindow window(sf::VideoMode(400, 400), "App");
         DebugDraw debug(window);
 
-        auto shapeA = std::make_unique<Circle>(30);
+        Circle::Ptr shapeA = std::make_unique<Circle>(30);
         shapeA->setPosition(100, 100);
-        auto shapeB = std::make_unique<Aabb>(50, 60);
+        Aabb::Ptr shapeB = std::make_unique<Aabb>(50, 60);
         shapeB->move(180, 180);
         Manifold m;
-        auto ray = std::make_unique<Ray>(0, 1, 100);
+        Ray::Ptr ray = std::make_unique<Ray>(0, 1, 100);
         ray->setPosition(50, 50);
         Raycast r;
 

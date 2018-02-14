@@ -12,7 +12,7 @@ enum class Type
 class Shape
 {
 public:
-        virtual ~Shape() = 0;
+        typedef std::unique_ptr<Shape> Ptr;
 
         sf::Vector2f getPosition() const;
         void setPosition(sf::Vector2f position);
@@ -34,6 +34,9 @@ private:
 class Circle : public Shape
 {
 public:
+        typedef std::unique_ptr<Circle> Ptr;
+
+public:
         Circle(float radius);
 
         float getRadius() const;
@@ -45,6 +48,9 @@ private:
 
 class Aabb : public Shape
 {
+public:
+        typedef std::unique_ptr<Aabb> Ptr;
+
 public:
         Aabb(sf::Vector2f size);
         Aabb(float width, float height);
@@ -59,6 +65,9 @@ private:
 
 class Ray
 {
+public:
+        typedef std::unique_ptr<Ray> Ptr;
+
 public:
         Ray(sf::Vector2f direction, float length);
         Ray(float x, float y, float length);
