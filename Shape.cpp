@@ -1,7 +1,6 @@
 #include "Shape.hpp"
 #define TINYC2_IMPLEMENTATION
 #include "tinyc2.h"
-#include <cassert>
 
 void handleResult(const c2Manifold&, Manifold&);
 void handleResult(const c2Raycast&, const c2Ray&, Raycast&);
@@ -17,8 +16,9 @@ Shape::Shape(Type type)
 {
 }
 
-Shape::~Shape()
+Type Shape::getType() const
 {
+        return mType;
 }
 
 sf::Vector2f Shape::getPosition() const
@@ -161,40 +161,33 @@ void Manifold::solve(const Shape& a, const Shape& b)
         dispatch(a, b);
 }
 
-template<typename T>
-const T& castShape(const Shape& shape)
-{
-        assert(dynamic_cast<const T*>(&shape) == &shape);
-        return *static_cast<const T*>(&shape);
-}
-
 void Manifold::dispatch(const Shape& a, const Shape& b)
 {
-        if (a.mType == Type::Aabb)
+        if (a.getType() == Type::Aabb)
         {
                 const Aabb& aChild = castShape<Aabb>(a);
 
-                if (b.mType == Type::Aabb)
+                if (b.getType() == Type::Aabb)
                 {
                         const Aabb& bChild = castShape<Aabb>(b);
                         collide(aChild, bChild);
                 }
-                else if (b.mType == Type::Circle)
+                else if (b.getType() == Type::Circle)
                 {
                         const Circle& bChild = castShape<Circle>(b);
                         collide(aChild, bChild);
                 }
         }
-        else if (a.mType == Type::Circle)
+        else if (a.getType() == Type::Circle)
         {
                 const Circle& aChild = castShape<Circle>(a);
 
-                if (b.mType == Type::Aabb)
+                if (b.getType() == Type::Aabb)
                 {
                         const Aabb& bChild = castShape<Aabb>(b);
                         collide(aChild, bChild);
                 }
-                else if (b.mType == Type::Circle)
+                else if (b.getType() == Type::Circle)
                 {
                         const Circle& bChild = castShape<Circle>(b);
                         collide(aChild, bChild);
@@ -252,12 +245,12 @@ void Raycast::solve(const Ray& a, const Shape& b)
 
 void Raycast::dispatch(const Ray& a, const Shape& b)
 {
-        if (b.mType == Type::Aabb)
+        if (b.getType() == Type::Aabb)
         {
                 const Aabb& bChild = castShape<Aabb>(b);
                 calculate(a, bChild);
         }
-        else if (b.mType == Type::Circle)
+        else if (b.getType() == Type::Circle)
         {
                 const Circle& bChild = castShape<Circle>(b);
                 calculate(a, bChild);

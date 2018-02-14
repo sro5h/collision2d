@@ -2,6 +2,8 @@
 #define SHAPE_HPP
 
 #include <SFML/System/Vector2.hpp>
+#include <memory>
+#include <cassert>
 
 enum class Type
 {
@@ -14,6 +16,10 @@ class Shape
 public:
         typedef std::unique_ptr<Shape> Ptr;
 
+public:
+        virtual ~Shape() = default;
+
+        Type getType() const;
         sf::Vector2f getPosition() const;
         void setPosition(sf::Vector2f position);
         void setPosition(float x, float y);
@@ -26,9 +32,6 @@ protected:
 private:
         const Type mType;
         sf::Vector2f mPosition;
-
-        friend class Manifold;
-        friend class Raycast;
 };
 
 class Circle : public Shape
@@ -126,5 +129,12 @@ public:
         sf::Vector2f contact;
         float t;
 };
+
+template<typename T>
+const T& castShape(const Shape& shape)
+{
+        assert(dynamic_cast<const T*>(&shape) == &shape);
+        return *static_cast<const T*>(&shape);
+}
 
 #endif // SHAPE_HPP

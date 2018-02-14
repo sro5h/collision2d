@@ -76,3 +76,15 @@ void DebugDraw::draw(const Raycast& raycast, sf::Color color)
                 mTarget.draw(point, 1, sf::Points);
         }
 }
+
+void DebugDraw::draw(const Shape& shape, sf::Color color)
+{
+        if (shape.getType() == Type::Aabb)
+        {
+                draw(castShape<Aabb>(shape), color);
+        }
+        else if (shape.getType() == Type::Circle)
+        {
+                draw(castShape<Circle>(shape), color);
+        }
+}
