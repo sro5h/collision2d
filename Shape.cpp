@@ -4,48 +4,20 @@
 
 void handleResult(const c2Manifold&, Manifold&);
 void handleResult(const c2Raycast&, const c2Ray&, Raycast&);
-c2AABB shapeToc2(const Aabb&);
-c2Circle shapeToc2(const Circle&);
-c2Ray rayToc2(const Ray&);
+c2AABB shapeToc2(const Aabb&, const sf::Vector2f);
+c2Circle shapeToc2(const Circle&, const sf::Vector2f);
+c2Ray rayToc2(const Ray&, const sf::Vector2f);
 c2v toc2v(const sf::Vector2f&);
 sf::Vector2f tosfv(const c2v&);
 
 Shape::Shape(Type type)
         : mType(type)
-        , mPosition(0, 0)
 {
 }
 
 Type Shape::getType() const
 {
         return mType;
-}
-
-sf::Vector2f Shape::getPosition() const
-{
-        return mPosition;
-}
-
-void Shape::setPosition(sf::Vector2f position)
-{
-        mPosition = position;
-}
-
-void Shape::setPosition(float x, float y)
-{
-        mPosition.x = x;
-        mPosition.y = y;
-}
-
-void Shape::move(sf::Vector2f amount)
-{
-        mPosition += amount;
-}
-
-void Shape::move(float x, float y)
-{
-        mPosition.x += x;
-        mPosition.y += y;
 }
 
 Circle::Circle(float radius)
@@ -93,33 +65,15 @@ void Aabb::setSize(float width, float height)
 }
 
 Ray::Ray(sf::Vector2f direction, float length)
-        : mPosition(0, 0)
-        , mDirection(direction)
+        : mDirection(direction)
         , mLength(length)
 {
 }
 
 Ray::Ray(float x, float y, float length)
-        : mPosition(0, 0)
-        , mDirection(x, y)
+        : mDirection(x, y)
         , mLength(length)
 {
-}
-
-sf::Vector2f Ray::getPosition() const
-{
-        return mPosition;
-}
-
-void Ray::setPosition(sf::Vector2f position)
-{
-        mPosition = position;
-}
-
-void Ray::setPosition(float x, float y)
-{
-        mPosition.x = x;
-        mPosition.y = y;
 }
 
 sf::Vector2f Ray::getDirection() const
@@ -156,8 +110,12 @@ Manifold::Manifold()
 {
 }
 
-void Manifold::solve(const Shape& a, const Shape& b)
+void Manifold::solve(const Shape& a, const sf::Vector2f posA,
+                const Shape& b, const sf::Vector2f posB)
 {
+        mPositionA = posA;
+        mPositionB = posB;
+
         dispatch(a, b);
 }
 
@@ -197,8 +155,8 @@ void Manifold::dispatch(const Shape& a, const Shape& b)
 
 void Manifold::collide(const Aabb& a, const Aabb& b)
 {
-        c2AABB shapeA = shapeToc2(a);
-        c2AABB shapeB = shapeToc2(b);
+        c2AABB shapeA = shapeToc2(a, mPositionA);
+        c2AABB shapeB = shapeToc2(b, mPositionB);
         c2Manifold m;
         c2AABBtoAABBManifold(shapeA, shapeB, &m);
 
@@ -207,8 +165,8 @@ void Manifold::collide(const Aabb& a, const Aabb& b)
 
 void Manifold::collide(const Circle& a, const Circle& b)
 {
-        c2Circle shapeA = shapeToc2(a);
-        c2Circle shapeB = shapeToc2(b);
+        c2Circle shapeA = shapeToc2(a, mPositionA);
+        c2Circle shapeB = shapeToc2(b, mPositionB);
         c2Manifold m;
         c2CircletoCircleManifold(shapeA, shapeB, &m);
 
@@ -223,8 +181,8 @@ void Manifold::collide(const Aabb& a, const Circle& b)
 
 void Manifold::collide(const Circle& a, const Aabb& b)
 {
-        c2Circle shapeA = shapeToc2(a);
-        c2AABB shapeB = shapeToc2(b);
+        c2Circle shapeA = shapeToc2(a, mPositionA);
+        c2AABB shapeB = shapeToc2(b, mPositionB);
         c2Manifold m;
         c2CircletoAABBManifold(shapeA, shapeB, &m);
 
@@ -238,8 +196,12 @@ Raycast::Raycast()
 {
 }
 
-void Raycast::solve(const Ray& a, const Shape& b)
+void Raycast::solve(const Ray& a, const sf::Vector2f posA,
+                const Shape& b, const sf::Vector2f posB)
 {
+        mPositionA = posA;
+        mPositionB = posB;
+
         dispatch(a, b);
 }
 
@@ -259,8 +221,8 @@ void Raycast::dispatch(const Ray& a, const Shape& b)
 
 void Raycast::calculate(const Ray& a, const Aabb& b)
 {
-        c2Ray ray = rayToc2(a);
-        c2AABB shape = shapeToc2(b);
+        c2Ray ray = rayToc2(a, mPositionA);
+        c2AABB shape = shapeToc2(b, mPositionB);
         c2Raycast r;
         hit = false;
 
@@ -270,8 +232,8 @@ void Raycast::calculate(const Ray& a, const Aabb& b)
 
 void Raycast::calculate(const Ray& a, const Circle& b)
 {
-        c2Ray ray = rayToc2(a);
-        c2Circle shape = shapeToc2(b);
+        c2Ray ray = rayToc2(a, mPositionA);
+        c2Circle shape = shapeToc2(b, mPositionB);
         c2Raycast r;
         hit = false;
 
@@ -298,26 +260,26 @@ void handleResult(const c2Raycast& raycast, const c2Ray& ray, Raycast& r)
         r.t = raycast.t;
 }
 
-c2AABB shapeToc2(const Aabb& aabb)
+c2AABB shapeToc2(const Aabb& aabb, const sf::Vector2f position)
 {
         c2AABB tmp;
-        tmp.min = toc2v(aabb.getPosition());
-        tmp.max = toc2v(aabb.getPosition() + aabb.getSize());
+        tmp.min = toc2v(position);
+        tmp.max = toc2v(position + aabb.getSize());
         return tmp;
 }
 
-c2Circle shapeToc2(const Circle& circle)
+c2Circle shapeToc2(const Circle& circle, const sf::Vector2f position)
 {
         c2Circle tmp;
-        tmp.p = toc2v(circle.getPosition());
+        tmp.p = toc2v(position);
         tmp.r = circle.getRadius();
         return tmp;
 }
 
-c2Ray rayToc2(const Ray& ray)
+c2Ray rayToc2(const Ray& ray, const sf::Vector2f position)
 {
         c2Ray tmp;
-        tmp.p = toc2v(ray.getPosition());
+        tmp.p = toc2v(position);
         tmp.d = toc2v(ray.getDirection());
         tmp.t = ray.getLength();
         return tmp;

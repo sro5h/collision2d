@@ -20,18 +20,12 @@ public:
         virtual ~Shape() = default;
 
         Type getType() const;
-        sf::Vector2f getPosition() const;
-        void setPosition(sf::Vector2f position);
-        void setPosition(float x, float y);
-        void move(sf::Vector2f amount);
-        void move(float x, float y);
 
 protected:
         Shape(Type type);
 
 private:
         const Type mType;
-        sf::Vector2f mPosition;
 };
 
 class Circle : public Shape
@@ -75,9 +69,6 @@ public:
         Ray(sf::Vector2f direction, float length);
         Ray(float x, float y, float length);
 
-        sf::Vector2f getPosition() const;
-        void setPosition(sf::Vector2f position);
-        void setPosition(float x, float y);
         sf::Vector2f getDirection() const;
         void setDirection(sf::Vector2f direction);
         void setDirection(float x, float y);
@@ -85,7 +76,6 @@ public:
         void setLength(float length);
 
 private:
-        sf::Vector2f mPosition;
         sf::Vector2f mDirection;
         float mLength;
 };
@@ -95,7 +85,8 @@ class Manifold
 public:
         Manifold();
 
-        void solve(const Shape& a, const Shape& b);
+        void solve(const Shape& a, const sf::Vector2f posA,
+                        const Shape& b, const sf::Vector2f posB);
 
 private:
         void dispatch(const Shape& a, const Shape& b);
@@ -109,6 +100,10 @@ public:
         sf::Vector2f normal;
         sf::Vector2f contact;
         float depth;
+
+private:
+        sf::Vector2f mPositionA;
+        sf::Vector2f mPositionB;
 };
 
 class Raycast
@@ -116,7 +111,8 @@ class Raycast
 public:
         Raycast();
 
-        void solve(const Ray& a, const Shape& b);
+        void solve(const Ray& a, const sf::Vector2f posA,
+                        const Shape& b, const sf::Vector2f posB);
 
 private:
         void dispatch(const Ray& a, const Shape& b);
@@ -128,6 +124,10 @@ public:
         sf::Vector2f normal;
         sf::Vector2f contact;
         float t;
+
+private:
+        sf::Vector2f mPositionA;
+        sf::Vector2f mPositionB;
 };
 
 template<typename T>

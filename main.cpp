@@ -13,12 +13,12 @@ int main()
         DebugDraw debug(window);
 
         Circle::Ptr shapeA = std::make_unique<Circle>(30);
-        shapeA->setPosition(100, 100);
+        sf::Vector2f positionA(200, 200);
         Aabb::Ptr shapeB = std::make_unique<Aabb>(50, 60);
-        shapeB->move(180, 180);
+        sf::Vector2f positionB(300, 300);
         Manifold m;
         Ray::Ptr ray = std::make_unique<Ray>(0, 1, 100);
-        ray->setPosition(50, 50);
+        sf::Vector2f positionR(100, 100);
         Raycast r;
 
         sf::Clock clock;
@@ -39,28 +39,28 @@ int main()
                 {
                         accumulator -= delta;
 
-                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-                                shapeA->move(-1.0f * speed, 0);
                         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-                                shapeA->move( 1.0f * speed, 0);
-                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-                                shapeA->move(0, -1.0f * speed);
+                                positionA.x += 1.0f * speed;
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+                                positionA.x -= 1.0f * speed;
                         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-                                shapeA->move(0,  1.0f * speed);
+                                positionA.y += 1.0f * speed;
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+                                positionA.y -= 1.0f * speed;
 
-                        m.solve(*shapeA, *shapeB);
-                        r.solve(*ray, *shapeA);
+                        m.solve(*shapeA, positionA, *shapeB, positionB);
+                        r.solve(*ray, positionR, *shapeA, positionA);
 
                         if (m.colliding)
                         {
-                                shapeA->move(-m.normal * m.depth);
+                                positionA -= m.normal * m.depth;
                         }
                 }
 
                 window.clear();
-                debug.draw(*shapeA);
-                debug.draw(*shapeB);
-                debug.draw(*ray);
+                debug.draw(*shapeA, positionA);
+                debug.draw(*shapeB, positionB);
+                debug.draw(*ray, positionR);
                 debug.draw(m, sf::Color::Green);
                 debug.draw(r, sf::Color::Cyan);
                 window.display();

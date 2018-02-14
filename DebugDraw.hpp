@@ -12,12 +12,12 @@ class DebugDraw final
 public:
         DebugDraw(sf::RenderTarget& target);
 
-        void draw(const Aabb& aabb, sf::Color color = sf::Color::White);
-        void draw(const Circle& circle, sf::Color color = sf::Color::White);
-        void draw(const Ray& ray, sf::Color color = sf::Color::White);
+        void draw(const Aabb& aabb, const sf::Vector2f pos, sf::Color color = sf::Color::White);
+        void draw(const Circle& circle, const sf::Vector2f pos, sf::Color color = sf::Color::White);
+        void draw(const Ray& ray, const sf::Vector2f pos, sf::Color color = sf::Color::White);
         void draw(const Manifold& manifold, sf::Color color = sf::Color::White);
         void draw(const Raycast& raycast, sf::Color color = sf::Color::White);
-        void draw(const Shape& shape, sf::Color color = sf::Color::White);
+        void draw(const Shape& shape, const sf::Vector2f pos, sf::Color color = sf::Color::White);
 
 private:
         sf::RenderTarget& mTarget;
