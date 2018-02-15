@@ -1,7 +1,7 @@
 #ifndef DEBUG_DRAW_HPP
 #define DEBUG_DRAW_HPP
 
-#include "Shape.hpp"
+#include "Collision.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>

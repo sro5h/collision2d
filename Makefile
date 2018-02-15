@@ -4,8 +4,8 @@ CXXFLAGS = -I. -Wall -Wextra -std=c++14
 LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
 PROJECT = a.out
-PROJECT_HEADERS = Shape.hpp DebugDraw.hpp
-PROJECT_SOURCES = main.cpp Shape.cpp DebugDraw.cpp
+PROJECT_HEADERS = Collision.hpp DebugDraw.hpp
+PROJECT_SOURCES = main.cpp Collision.cpp DebugDraw.cpp
 PROJECT_OBJECTS = $(subst .cpp,.o,$(PROJECT_SOURCES))
 
 all: $(PROJECT)
