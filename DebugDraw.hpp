@@ -1,5 +1,5 @@
-#ifndef DEBUG_DRAW_HPP
-#define DEBUG_DRAW_HPP
+#ifndef DEBUG_DRAW_HPP_INCLUDED
+#define DEBUG_DRAW_HPP_INCLUDED
 
 #include "Collision.hpp"
 #include <SFML/Graphics/Color.hpp>
@@ -27,4 +27,4 @@ private:
         sf::RenderTarget& mTarget;
 };
 
-#endif // DEBUG_DRAW_HPP
+#endif // DEBUG_DRAW_HPP_INCLUDED

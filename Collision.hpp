@@ -1,5 +1,5 @@
-#ifndef SHAPE_HPP
-#define SHAPE_HPP
+#ifndef COLLISION_HPP_INCLUDED
+#define COLLISION_HPP_INCLUDED
 
 #include <SFML/Graphics/Transform.hpp>
 #include <memory>
@@ -137,4 +137,4 @@ const T& castShape(const Shape& shape)
         return *static_cast<const T*>(&shape);
 }
 
-#endif // SHAPE_HPP
+#endif // COLLISION_HPP_INCLUDED
