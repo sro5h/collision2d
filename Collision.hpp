@@ -1,7 +1,7 @@
 #ifndef COLLISION_HPP_INCLUDED
 #define COLLISION_HPP_INCLUDED
 
-#include <SFML/Graphics/Transform.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <memory>
 #include <cassert>
 
@@ -85,8 +85,8 @@ class Manifold
 public:
         Manifold();
 
-        void solve(const Shape& a, const sf::Transform transformA,
-                        const Shape& b, const sf::Transform transformB);
+        void solve(const Shape& a, const sf::Vector2f positionA,
+                        const Shape& b, const sf::Vector2f positionB);
 
 private:
         void dispatch(const Shape& a, const Shape& b);
@@ -102,8 +102,8 @@ public:
         float depth;
 
 private:
-        sf::Transform mTransformA;
-        sf::Transform mTransformB;
+        sf::Vector2f mPositionA;
+        sf::Vector2f mPositionB;
 };
 
 class Raycast
@@ -111,8 +111,8 @@ class Raycast
 public:
         Raycast();
 
-        void solve(const Ray& a, const sf::Transform transformA,
-                        const Shape& b, const sf::Transform transformB);
+        void solve(const Ray& a, const sf::Vector2f positionA,
+                        const Shape& b, const sf::Vector2f positionB);
 
 private:
         void dispatch(const Ray& a, const Shape& b);
@@ -126,8 +126,8 @@ public:
         float t;
 
 private:
-        sf::Transform mTransformA;
-        sf::Transform mTransformB;
+        sf::Vector2f mPositionA;
+        sf::Vector2f mPositionB;
 };
 
 template<typename T>

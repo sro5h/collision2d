@@ -5,10 +5,10 @@ DebugDraw::DebugDraw(sf::RenderTarget& target)
 {
 }
 
-void DebugDraw::draw(const Aabb& aabb, const sf::Transform transform, sf::Color color)
+void DebugDraw::draw(const Aabb& aabb, const sf::Vector2f position, sf::Color color)
 {
         sf::RectangleShape shape(aabb.getSize());
-        shape.setPosition(transform.transformPoint(0.0f, 0.0f));
+        shape.setPosition(position);
         shape.setFillColor(sf::Color::Transparent);
         shape.setOutlineColor(color);
         shape.setOutlineThickness(1.0f);
@@ -16,11 +16,11 @@ void DebugDraw::draw(const Aabb& aabb, const sf::Transform transform, sf::Color 
         mTarget.draw(shape);
 }
 
-void DebugDraw::draw(const Circle& circle, const sf::Transform transform, sf::Color color)
+void DebugDraw::draw(const Circle& circle, const sf::Vector2f position, sf::Color color)
 {
         sf::CircleShape shape(circle.getRadius());
         shape.setOrigin(circle.getRadius(), circle.getRadius());
-        shape.setPosition(transform.transformPoint(0.0f, 0.0f));
+        shape.setPosition(position);
         shape.setFillColor(sf::Color::Transparent);
         shape.setOutlineColor(color);
         shape.setOutlineThickness(1.0f);
@@ -28,9 +28,8 @@ void DebugDraw::draw(const Circle& circle, const sf::Transform transform, sf::Co
         mTarget.draw(shape);
 }
 
-void DebugDraw::draw(const Ray& ray, const sf::Transform transform, sf::Color color)
+void DebugDraw::draw(const Ray& ray, const sf::Vector2f position, sf::Color color)
 {
-        sf::Vector2f position = transform.transformPoint(0.0f, 0.0f);
         sf::Vector2f direction = ray.getDirection() * ray.getLength();
         sf::Vertex line[] = {
                 sf::Vertex(position, color),
@@ -78,14 +77,14 @@ void DebugDraw::draw(const Raycast& raycast, sf::Color color)
         }
 }
 
-void DebugDraw::draw(const Shape& shape, const sf::Transform transform, sf::Color color)
+void DebugDraw::draw(const Shape& shape, const sf::Vector2f position, sf::Color color)
 {
         if (shape.getType() == Type::Aabb)
         {
-                draw(castShape<Aabb>(shape), transform, color);
+                draw(castShape<Aabb>(shape), position, color);
         }
         else if (shape.getType() == Type::Circle)
         {
-                draw(castShape<Circle>(shape), transform, color);
+                draw(castShape<Circle>(shape), position, color);
         }
 }
