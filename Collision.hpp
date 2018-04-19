@@ -14,9 +14,6 @@ enum class Type
 class Shape
 {
 public:
-        typedef std::unique_ptr<Shape> Ptr;
-
-public:
         virtual ~Shape() = default;
 
         Type getType() const;
@@ -31,9 +28,6 @@ private:
 class Circle : public Shape
 {
 public:
-        typedef std::unique_ptr<Circle> Ptr;
-
-public:
         Circle(float radius);
 
         float getRadius() const;
@@ -45,9 +39,6 @@ private:
 
 class Aabb : public Shape
 {
-public:
-        typedef std::unique_ptr<Aabb> Ptr;
-
 public:
         Aabb(sf::Vector2f size);
         Aabb(float width, float height);
@@ -63,9 +54,6 @@ private:
 class Ray
 {
 public:
-        typedef std::unique_ptr<Ray> Ptr;
-
-public:
         Ray(sf::Vector2f direction, float length);
         Ray(float x, float y, float length);
 
@@ -80,55 +68,30 @@ private:
         float mLength;
 };
 
-class Manifold
+struct Manifold
 {
-public:
         Manifold();
 
-        void solve(const Shape& a, const sf::Vector2f positionA,
-                        const Shape& b, const sf::Vector2f positionB);
-
-private:
-        void dispatch(const Shape& a, const Shape& b);
-        void collide(const Aabb& a, const Aabb& b);
-        void collide(const Circle& a, const Circle& b);
-        void collide(const Aabb& a, const Circle& b);
-        void collide(const Circle& a, const Aabb& b);
-
-public:
         bool colliding;
         sf::Vector2f normal;
         sf::Vector2f contact;
         float depth;
-
-private:
-        sf::Vector2f mPositionA;
-        sf::Vector2f mPositionB;
 };
 
-class Raycast
+struct Raycast
 {
-public:
         Raycast();
 
-        void solve(const Ray& a, const sf::Vector2f positionA,
-                        const Shape& b, const sf::Vector2f positionB);
-
-private:
-        void dispatch(const Ray& a, const Shape& b);
-        void calculate(const Ray& a, const Aabb& b);
-        void calculate(const Ray& a, const Circle& b);
-
-public:
         bool hit;
         sf::Vector2f normal;
         sf::Vector2f contact;
         float t;
-
-private:
-        sf::Vector2f mPositionA;
-        sf::Vector2f mPositionB;
 };
+
+Manifold solve(const Shape& a, sf::Vector2f posA, const Shape& b,
+               sf::Vector2f posB);
+Raycast solve(const Ray& a, sf::Vector2f posA, const Shape& b,
+               sf::Vector2f posB);
 
 template<typename T>
 const T& castShape(const Shape& shape)

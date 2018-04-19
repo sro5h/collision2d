@@ -2,13 +2,33 @@
 #define TINYC2_IMPLEMENTATION
 #include "tinyc2.h"
 
-void handleResult(const c2Manifold&, Manifold&);
-void handleResult(const c2Raycast&, const c2Ray&, Raycast&);
-c2AABB shapeToc2(const Aabb&, const sf::Vector2f);
-c2Circle shapeToc2(const Circle&, const sf::Vector2f);
-c2Ray rayToc2(const Ray&, const sf::Vector2f);
-c2v toc2v(const sf::Vector2f&);
-sf::Vector2f tosfv(const c2v&);
+namespace priv
+{
+template <typename T>
+struct Helper
+{
+        Helper(const T& shape, sf::Vector2f position);
+
+        const T& shape;
+        sf::Vector2f position;
+};
+
+Manifold calculate(Helper<Aabb> a, Helper<Aabb> b);
+Manifold calculate(Helper<Circle> a, Helper<Circle> b);
+Manifold calculate(Helper<Aabb> a, Helper<Circle> b);
+Manifold calculate(Helper<Circle> a, Helper<Aabb> b);
+Raycast calculate(Helper<Ray> a, Helper<Aabb> b);
+Raycast calculate(Helper<Ray> a, Helper<Circle> b);
+
+Manifold toManifold(const c2Manifold& m);
+Raycast toRaycast(const c2Raycast& r, const c2Ray& ray);
+
+c2AABB toc2AABB(Helper<Aabb> aabb);
+c2Circle toc2Circle(Helper<Circle> circle);
+c2Ray toc2Ray(Helper<Ray> ray);
+c2v toc2v(const sf::Vector2f& v);
+sf::Vector2f tosfv(const c2v& v);
+}
 
 Shape::Shape(Type type)
         : mType(type)
@@ -110,187 +130,202 @@ Manifold::Manifold()
 {
 }
 
-void Manifold::solve(const Shape& a, const sf::Vector2f positionA,
-                const Shape& b, const sf::Vector2f positionB)
-{
-        mPositionA = positionA;
-        mPositionB = positionB;
-
-        dispatch(a, b);
-}
-
-void Manifold::dispatch(const Shape& a, const Shape& b)
-{
-        if (a.getType() == Type::Aabb)
-        {
-                const Aabb& aChild = castShape<Aabb>(a);
-
-                if (b.getType() == Type::Aabb)
-                {
-                        const Aabb& bChild = castShape<Aabb>(b);
-                        collide(aChild, bChild);
-                }
-                else if (b.getType() == Type::Circle)
-                {
-                        const Circle& bChild = castShape<Circle>(b);
-                        collide(aChild, bChild);
-                }
-        }
-        else if (a.getType() == Type::Circle)
-        {
-                const Circle& aChild = castShape<Circle>(a);
-
-                if (b.getType() == Type::Aabb)
-                {
-                        const Aabb& bChild = castShape<Aabb>(b);
-                        collide(aChild, bChild);
-                }
-                else if (b.getType() == Type::Circle)
-                {
-                        const Circle& bChild = castShape<Circle>(b);
-                        collide(aChild, bChild);
-                }
-        }
-}
-
-void Manifold::collide(const Aabb& a, const Aabb& b)
-{
-        c2AABB shapeA = shapeToc2(a, mPositionA);
-        c2AABB shapeB = shapeToc2(b, mPositionB);
-        c2Manifold m;
-        c2AABBtoAABBManifold(shapeA, shapeB, &m);
-
-        handleResult(m, *this);
-}
-
-void Manifold::collide(const Circle& a, const Circle& b)
-{
-        c2Circle shapeA = shapeToc2(a, mPositionA);
-        c2Circle shapeB = shapeToc2(b, mPositionB);
-        c2Manifold m;
-        c2CircletoCircleManifold(shapeA, shapeB, &m);
-
-        handleResult(m, *this);
-}
-
-void Manifold::collide(const Aabb& a, const Circle& b)
-{
-        collide(b, a);
-        normal = -normal;
-}
-
-void Manifold::collide(const Circle& a, const Aabb& b)
-{
-        c2Circle shapeA = shapeToc2(a, mPositionA);
-        c2AABB shapeB = shapeToc2(b, mPositionB);
-        c2Manifold m;
-        c2CircletoAABBManifold(shapeA, shapeB, &m);
-
-        handleResult(m, *this);
-}
-
 Raycast::Raycast()
         : hit(false)
         , normal(0, 0)
+        , contact(0, 0)
         , t(0)
 {
 }
 
-void Raycast::solve(const Ray& a, const sf::Vector2f positionA,
-                const Shape& b, const sf::Vector2f positionB)
+template <typename T>
+priv::Helper<T>::Helper(const T& shape, sf::Vector2f position)
+        : shape(shape)
+        , position(position)
 {
-        mPositionA = positionA;
-        mPositionB = positionB;
-
-        dispatch(a, b);
 }
 
-void Raycast::dispatch(const Ray& a, const Shape& b)
+Manifold solve(const Shape& a, sf::Vector2f posA, const Shape& b,
+               sf::Vector2f posB)
 {
+        Manifold m;
+
+        if (a.getType() == Type::Aabb)
+        {
+                priv::Helper<Aabb> ha(castShape<Aabb>(a), posA);
+
+                if (b.getType() == Type::Aabb)
+                {
+                        priv::Helper<Aabb> hb(castShape<Aabb>(b), posB);
+                        m = priv::calculate(ha, hb);
+                }
+                else if (b.getType() == Type::Circle)
+                {
+                        priv::Helper<Circle> hb(castShape<Circle>(b), posB);
+                        m = priv::calculate(ha, hb);
+                }
+        }
+        else if (a.getType() == Type::Circle)
+        {
+                priv::Helper<Circle> ha(castShape<Circle>(a), posA);
+
+                // Could use a function castOther<T>() to avoid duplicating this
+                if (b.getType() == Type::Aabb)
+                {
+                        priv::Helper<Aabb> hb(castShape<Aabb>(b), posB);
+                        m = priv::calculate(ha, hb);
+                }
+                else if (b.getType() == Type::Circle)
+                {
+                        priv::Helper<Circle> hb(castShape<Circle>(b), posB);
+                        m = priv::calculate(ha, hb);
+                }
+        }
+
+        return m;
+}
+
+Raycast solve(const Ray& a, sf::Vector2f posA, const Shape& b,
+               sf::Vector2f posB)
+{
+        Raycast r;
+        priv::Helper<Ray> ha(a, posA);
+
         if (b.getType() == Type::Aabb)
         {
-                const Aabb& bChild = castShape<Aabb>(b);
-                calculate(a, bChild);
+                priv::Helper<Aabb> hb(castShape<Aabb>(b), posB);
+                r = priv::calculate(ha, hb);
         }
         else if (b.getType() == Type::Circle)
         {
-                const Circle& bChild = castShape<Circle>(b);
-                calculate(a, bChild);
+                priv::Helper<Circle> hb(castShape<Circle>(b), posB);
+                r = priv::calculate(ha, hb);
         }
+
+        return r;
 }
 
-void Raycast::calculate(const Ray& a, const Aabb& b)
+Manifold priv::calculate(Helper<Aabb> a, Helper<Aabb> b)
 {
-        c2Ray ray = rayToc2(a, mPositionA);
-        c2AABB shape = shapeToc2(b, mPositionB);
+        c2AABB shapeA = priv::toc2AABB(a);
+        c2AABB shapeB = priv::toc2AABB(b);
+        c2Manifold m;
+        c2AABBtoAABBManifold(shapeA, shapeB, &m);
+
+        return priv::toManifold(m);
+}
+
+Manifold priv::calculate(Helper<Circle> a, Helper<Circle> b)
+{
+        c2Circle shapeA = priv::toc2Circle(a);
+        c2Circle shapeB = priv::toc2Circle(b);
+        c2Manifold m;
+        c2CircletoCircleManifold(shapeA, shapeB, &m);
+
+        return priv::toManifold(m);
+}
+
+Manifold priv::calculate(Helper<Aabb> a, Helper<Circle> b)
+{
+        Manifold m = priv::calculate(b, a);
+        m.normal = -m.normal;
+
+        return m;
+}
+
+Manifold priv::calculate(Helper<Circle> a, Helper<Aabb> b)
+{
+        c2Circle shapeA = priv::toc2Circle(a);
+        c2AABB shapeB = priv::toc2AABB(b);
+        c2Manifold m;
+        c2CircletoAABBManifold(shapeA, shapeB, &m);
+
+        return priv::toManifold(m);
+}
+
+Raycast priv::calculate(Helper<Ray> a, Helper<Aabb> b)
+{
+        Raycast tmp;
+        c2Ray ray = priv::toc2Ray(a);
+        c2AABB shape = priv::toc2AABB(b);
         c2Raycast r;
-        hit = false;
 
         if (c2RaytoAABB(ray, shape, &r))
-                handleResult(r, ray, *this);
+                tmp = priv::toRaycast(r, ray);
+
+        return tmp;
 }
 
-void Raycast::calculate(const Ray& a, const Circle& b)
+Raycast priv::calculate(Helper<Ray> a, Helper<Circle> b)
 {
-        c2Ray ray = rayToc2(a, mPositionA);
-        c2Circle shape = shapeToc2(b, mPositionB);
+        Raycast tmp;
+        c2Ray ray = priv::toc2Ray(a);
+        c2Circle shape = priv::toc2Circle(b);
         c2Raycast r;
-        hit = false;
 
         if (c2RaytoCircle(ray, shape, &r))
-                handleResult(r, ray, *this);
+                tmp = priv::toRaycast(r, ray);
+
+        return tmp;
 }
 
-void handleResult(const c2Manifold& manifold, Manifold& m)
+Manifold priv::toManifold(const c2Manifold& m)
 {
-        m.colliding = manifold.count > 0;
-        if (m.colliding)
+        Manifold tmp;
+        tmp.colliding = m.count > 0;
+
+        if (tmp.colliding)
         {
-                m.normal = tosfv(manifold.normal);
-                m.contact = tosfv(manifold.contact_points[0]);
-                m.depth = manifold.depths[0];
+                tmp.normal = tosfv(m.normal);
+                tmp.contact = tosfv(m.contact_points[0]);
+                tmp.depth = m.depths[0];
         }
+
+        return tmp;
 }
 
-void handleResult(const c2Raycast& raycast, const c2Ray& ray, Raycast& r)
+Raycast priv::toRaycast(const c2Raycast& r, const c2Ray& ray)
 {
-        r.hit = true;
-        r.normal = tosfv(raycast.n);
-        r.contact = tosfv(c2Impact(ray, raycast.t));
-        r.t = raycast.t;
+        Raycast tmp;
+        tmp.hit = true;
+        tmp.normal = tosfv(r.n);
+        tmp.contact = tosfv(c2Impact(ray, r.t));
+        tmp.t = r.t;
+
+        return tmp;
 }
 
-c2AABB shapeToc2(const Aabb& aabb, const sf::Vector2f position)
+c2AABB priv::toc2AABB(Helper<Aabb> aabb)
 {
         c2AABB tmp;
-        tmp.min = toc2v(position);
-        tmp.max = toc2v(position + aabb.getSize());
+        tmp.min = toc2v(aabb.position);
+        tmp.max = toc2v(aabb.position + aabb.shape.getSize());
         return tmp;
 }
 
-c2Circle shapeToc2(const Circle& circle, const sf::Vector2f position)
+c2Circle priv::toc2Circle(Helper<Circle> circle)
 {
         c2Circle tmp;
-        tmp.p = toc2v(position);
-        tmp.r = circle.getRadius();
+        tmp.p = toc2v(circle.position);
+        tmp.r = circle.shape.getRadius();
         return tmp;
 }
 
-c2Ray rayToc2(const Ray& ray, const sf::Vector2f position)
+c2Ray priv::toc2Ray(Helper<Ray> ray)
 {
         c2Ray tmp;
-        tmp.p = toc2v(position);
-        tmp.d = toc2v(ray.getDirection());
-        tmp.t = ray.getLength();
+        tmp.p = toc2v(ray.position);
+        tmp.d = toc2v(ray.shape.getDirection());
+        tmp.t = ray.shape.getLength();
         return tmp;
 }
 
-c2v toc2v(const sf::Vector2f& v)
+c2v priv::toc2v(const sf::Vector2f& v)
 {
         return c2V(v.x, v.y);
 }
 
-sf::Vector2f tosfv(const c2v& v)
+sf::Vector2f priv::tosfv(const c2v& v)
 {
         return sf::Vector2f(v.x, v.y);
 }

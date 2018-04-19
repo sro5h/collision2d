@@ -4,6 +4,9 @@
 #include <iostream>
 #include <memory>
 
+template <typename T>
+using uptr = std::unique_ptr<T>;
+
 const float speed = 1.0f;
 const sf::Time delta = sf::microseconds(15625);
 
@@ -12,12 +15,13 @@ int main()
         sf::RenderWindow window(sf::VideoMode(400, 400), "App");
         DebugDraw debug(window);
 
-        Circle::Ptr shapeA = std::make_unique<Circle>(30);
+        uptr<Circle> shapeA = std::make_unique<Circle>(30);
         sf::Vector2f positionA(200, 200);
-        Aabb::Ptr shapeB = std::make_unique<Aabb>(50, 60);
+        uptr<Aabb> shapeB = std::make_unique<Aabb>(50, 60);
         sf::Vector2f positionB(300, 300);
         Manifold m;
-        Ray::Ptr ray = std::make_unique<Ray>(0, 1, 100);
+
+        uptr<Ray> ray = std::make_unique<Ray>(0, 1, 100);
         sf::Vector2f positionR(100, 100);
         Raycast r;
 
@@ -48,8 +52,8 @@ int main()
                         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
                                 positionA.y -= 1.0f * speed;
 
-                        m.solve(*shapeA, positionA, *shapeB, positionB);
-                        r.solve(*ray, positionR, *shapeA, positionA);
+                        m = solve(*shapeA, positionA, *shapeB, positionB);
+                        r = solve(*ray, positionR, *shapeA, positionA);
 
                         if (m.colliding)
                         {
